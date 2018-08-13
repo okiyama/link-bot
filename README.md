@@ -6,3 +6,4 @@ TODO:
 * Respect durations of notes in MIDI file
 * Allow user to choose which track link should play
 * Handle notes outside his range somehow. Auto-transcribing could work, but if the range is too big it just won't really work.
+* Fix the dependency on copy-pasting LuaMidi into Bizhawk/Lua folder
