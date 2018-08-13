@@ -21,6 +21,14 @@ resetTable["R"]="False";
 resetTable["Start"]="False";
 resetTable["Z"]="False"
 ]]
+
+local LuaMidi = require ('LuaMidi');
+
+--Track 1 is metadata, I think the only thing I care about is the second event, Tempo
+local tracks = LuaMidi.get_MIDI_tracks("tetris.midi");
+console.log(tracks[1]["events"][3]);
+console.log(tracks[2]["events"][2]["pitch"]);
+
 notesToButtonsMap = {
 	["B4"] = {["Z"] = "True",["A"] = "True"},
 	["C5"] = {["Z"] = "True",["A"] = "True"},
@@ -38,10 +46,12 @@ notesToButtonsMap = {
 	["A#5"] = {["Z"] = "True",["C Left"] = "True"},
 	["B5"] = {["C Left"] = "True"},
 	["C6"] = {["R"] = "True",["C Left"] = "True"},
+	["B#6"] = {["R"] = "True",["C Left"] = "True"},
 	["C#6"] = {["Z"] = "True",["C Up"] = "True"},
 	["D6"] = {["C Up"] = "True"},
 	["D#6"] = {["R"] = "True",["C Up"] = "True"},
 	["E6"] = {["R"] = "True",["C Up"] = "True"},
+	["Fb6"] = {["R"] = "True",["C Up"] = "True"},
 	["F6"] = {["R"] = "True",["C Up"] = "True"}
 };
 
@@ -62,23 +72,14 @@ notesToAnalogMap = {
 	["A#5"] = {["Y Axis"] = "0"},
 	["B5"] = {["Y Axis"] = "0"},
 	["C6"] = {["Y Axis"] = "0"},
+	["B#6"] = {["Y Axis"] = "0"},
 	["C#6"] = {["Y Axis"] = "0"},
 	["D6"] = {["Y Axis"] = "0"},
 	["D#6"] = {["Y Axis"] = "0"},
 	["E6"] = {["Y Axis"] = "38"},
+	["Fb6"] = {["Y Axis"] = "38"},
 	["F6"] = {["Y Axis"] = "127"}
 };
-
-local function test ()
-	resetTable = {}
-	resetTable["A"]="True";
-	joypad.set(resetTable, 1);
-
-	analogTable = {};
-	analogTable["X Axis"] = "0";
-	analogTable["Y Axis"] = "0";
-	joypad.setanalog(analogTable, 1);
-end
 
 local function advanceOneSecond ()
 	for i=1,20 do
@@ -95,10 +96,22 @@ end
 
 scale = {"B4", "C5", "D5", "E5", "F5", "G5", "A5", "B5", "C6", "D6", "E6", "F6"}
 
+--[[
 for i=1, #scale do
 	note = scale[i];
 	joypad.setanalog(notesToAnalogMap[note], 1);
 	--console.log(joypad.get(1))
+	holdButtonsForOneSecond(notesToButtonsMap[note]);
+	advanceOneSecond();
+end
+]]
+
+events = tracks[2]["events"]
+
+for i=2, #events do
+	console.log(events[i]["pitch"][1]);
+	note = events[i]["pitch"][1];
+	joypad.setanalog(notesToAnalogMap[note], 1);
 	holdButtonsForOneSecond(notesToButtonsMap[note]);
 	advanceOneSecond();
 end
