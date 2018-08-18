@@ -3,7 +3,5 @@ A bot for having Link play songs in Majora's Mask. Uses Bizhawk's lua scripting 
 
 TODO:
 
-* Respect durations of notes in MIDI file
 * Allow user to choose which track link should play
-* Handle notes outside his range somehow. Auto-transcribing could work, but if the range is too big it just won't really work.
-* Fix the dependency on copy-pasting LuaMidi into Bizhawk/Lua folder
+* Handle notes outside this range somehow. Auto-transcribing could work, but if the range is too big it just won't really work.
