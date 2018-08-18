@@ -1,115 +1,74 @@
 --joypad.set just sends that button config along for that particular frame
 --joypad.setanalog sends that value and keeps it until it's reset
-
---[[
-resetTable["A"]="False"
-resetTable["A Down"]="False"
-resetTable["A Left"]="False"
-resetTable["A Right"]="False"
-resetTable["A Up"]="False"
-resetTable["B"]="False"
-resetTable["C Down"]="False"
-resetTable["C Left"]="False"
-resetTable["C Right"]="False"
-resetTable["C Up"]="False"
-resetTable["DPad D"]="False"
-resetTable["DPad L"]="False"
-resetTable["DPad R"]="False"
-resetTable["DPad U"]="False"
-resetTable["L"]="False"
-resetTable["R"]="False"
-resetTable["Start"]="False"
-resetTable["Z"]="False"
-]]
+--assuming 60 frames in a second
 
 local Midi = require ('MIDI')
 local midiInput = require("MidiParser")
 
-
 notesToButtonsMap = {
-	["B4"] = {["Z"] = "True",["A"] = "True"},
-	["C5"] = {["Z"] = "True",["A"] = "True"},
-	["C#5"] = {["Z"] = "True",["A"] = "True"},
-	["D5"] = {["A"] = "True"},
-	["D#5"] = {["R"] = "True",["A"] = "True"},
-	["E5"] = {["Z"] = "True",["C Down"] = "True"},
-	["F5"] = {["C Down"] = "True"},
-	["F#5"] = {["R"] = "True",["C Down"] = "True"},
---	["G5"] = {["C Down"] = "True"},
-	["G5"] = {["Z"] = "True",["C Right"] = "True"},
-	["G#5"] = {["Z"] = "True",["C Right"] = "True"},
-	["A5"] = {["C Right"] = "True"},
-	["A#5"] = {["R"] = "True",["C Right"] = "True"},
-	["A#5"] = {["Z"] = "True",["C Left"] = "True"},
-	["B5"] = {["C Left"] = "True"},
-	["C6"] = {["R"] = "True",["C Left"] = "True"},
-	["B#6"] = {["R"] = "True",["C Left"] = "True"},
-	["C#6"] = {["Z"] = "True",["C Up"] = "True"},
-	["D6"] = {["C Up"] = "True"},
-	["D#6"] = {["R"] = "True",["C Up"] = "True"},
-	["E6"] = {["R"] = "True",["C Up"] = "True"},
-	["Fb6"] = {["R"] = "True",["C Up"] = "True"},
-	["F6"] = {["R"] = "True",["C Up"] = "True"}
+	[71] = {["Z"] = "True",["A"] = "True"},
+	[72] = {["Z"] = "True",["A"] = "True"},
+	[73] = {["Z"] = "True",["A"] = "True"},
+	[74] = {["A"] = "True"},
+	[75] = {["R"] = "True",["A"] = "True"},
+	[76] = {["Z"] = "True",["C Down"] = "True"},
+	[77] = {["C Down"] = "True"},
+	[78] = {["R"] = "True",["C Down"] = "True"},
+	[79] = {["Z"] = "True",["C Right"] = "True"},
+	[80] = {["Z"] = "True",["C Right"] = "True"},
+	[81] = {["C Right"] = "True"},
+	[82] = {["Z"] = "True",["C Left"] = "True"},
+	[83] = {["C Left"] = "True"},
+	[84] = {["R"] = "True",["C Left"] = "True"},
+	[85] = {["Z"] = "True",["C Up"] = "True"},
+	[86] = {["C Up"] = "True"},
+	[87] = {["R"] = "True",["C Up"] = "True"},
+	[88] = {["R"] = "True",["C Up"] = "True"},
+	[89] = {["R"] = "True",["C Up"] = "True"}
 }
 
 notesToAnalogMap = {
-	["B4"] = {["Y Axis"] = "-127"},
-	["C5"] = {["Y Axis"] = "-40"},
-	["C#5"] = {["Y Axis"] = "0"},
-	["D5"] = {["Y Axis"] = "0"},
-	["D#5"] = {["Y Axis"] = "0"},
-	["E5"] = {["Y Axis"] = "0"},
-	["F5"] = {["Y Axis"] = "0"},
-	["F#5"] = {["Y Axis"] = "0"},
---	["G5"] = {["Y Axis"] = "127"},
-	["G5"] = {["Y Axis"] = "-39"},
-	["G#5"] = {["Y Axis"] = "0"},
-	["A5"] = {["Y Axis"] = "0"},
-	["A#5"] = {["Y Axis"] = "0"},
-	["A#5"] = {["Y Axis"] = "0"},
-	["B5"] = {["Y Axis"] = "0"},
-	["C6"] = {["Y Axis"] = "0"},
-	["B#6"] = {["Y Axis"] = "0"},
-	["C#6"] = {["Y Axis"] = "0"},
-	["D6"] = {["Y Axis"] = "0"},
-	["D#6"] = {["Y Axis"] = "0"},
-	["E6"] = {["Y Axis"] = "38"},
-	["Fb6"] = {["Y Axis"] = "38"},
-	["F6"] = {["Y Axis"] = "127"}
+	[71] = {["Y Axis"] = "-127"},
+	[72] = {["Y Axis"] = "-40"},
+	[73] = {["Y Axis"] = "0"},
+	[74] = {["Y Axis"] = "0"},
+	[75] = {["Y Axis"] = "0"},
+	[76] = {["Y Axis"] = "0"},
+	[77] = {["Y Axis"] = "0"},
+	[78] = {["Y Axis"] = "0"},
+	[79] = {["Y Axis"] = "-39"},
+	[80] = {["Y Axis"] = "0"},
+	[81] = {["Y Axis"] = "0"},
+	[82] = {["Y Axis"] = "0"},
+	[83] = {["Y Axis"] = "0"},
+	[84] = {["Y Axis"] = "0"},
+	[85] = {["Y Axis"] = "0"},
+	[86] = {["Y Axis"] = "0"},
+	[87] = {["Y Axis"] = "0"},
+	[88] = {["Y Axis"] = "38"},
+	[89] = {["Y Axis"] = "127"}
 }
 
-local function advanceOneSecond ()
-	for i=1,20 do
-		emu.frameadvance()
-	end
-end
 
-local function holdButtonsForOneSecond (buttons)
-	for i=1,20 do
+local function holdButtonsForFrames(buttons, frameCount)
+	for i=1, frameCount do
 		joypad.set(buttons, 1)
 		emu.frameadvance()
 	end
 end
 
-scale = {"B4", "C5", "D5", "E5", "F5", "G5", "A5", "B5", "C6", "D6", "E6", "F6"}
-
---[[
-for i=1, #scale do
-	note = scale[i]
-	joypad.setanalog(notesToAnalogMap[note], 1)
-	--console.log(joypad.get(1))
-	holdButtonsForOneSecond(notesToButtonsMap[note])
-	advanceOneSecond()
-end
-]]
 midiInput.new("tetris.midi")
-midiInput.printNotes()
---[[
-cRight = {["C Right"] = "True"}
-holdButtonsForOneSecond(cRight)
-advanceOneSecond()
-holdButtonsForOneSecond(cRight)
-]]
+--midiInput.printNotes()
+
+for i=1, #midiInput.scoreNotes do
+	local currentNoteEvent = midiInput.scoreNotes[i]
+	local note = currentNoteEvent["note"]
+	local framesToHold = midiInput.framesPerBeat * currentNoteEvent["durationMultiplier"]
+
+	joypad.setanalog(notesToAnalogMap[note])
+	holdButtonsForFrames(notesToButtonsMap[note], framesToHold)
+end
+
 
 while true do
 	emu.frameadvance()
