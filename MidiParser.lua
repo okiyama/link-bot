@@ -27,7 +27,6 @@ end
 
 
 -- Print out info of notes
--- Precondition: removeNonNotes() called before this
 function score.printNotes()
 	console.log("Ticks per quarter note: " .. score.ticksPerQuarterNote)
 	console.log("BPM: " .. score.beatsPerMinute)
@@ -38,6 +37,41 @@ function score.printNotes()
 	for k, event in ipairs(score.scoreNotes) do
 		console.log(string.format("%d %5s, %5s, %5s, %4s, %5s, %6s, %5s\n", k,
 		event["type"], event["start"], event["duration"], event["chan"], event["note"], event["velocity"], event["durationMultiplier"]))
+	end
+end
+
+--Transposes notes to fix within the mix, max range. If the loaded MIDI file
+--can't fit in that range, this returns an error message instead.
+function score.autoTranspose(minNote, maxNote)
+	local min = 128
+	local max = 0
+
+	for i=1, #score.scoreNotes do
+		local currentNote = score.scoreNotes[i]["note"]
+		if(currentNote < min) then
+			min = currentNote
+		end
+		if(currentNote > max) then
+			max = currentNote
+		end
+	end
+
+	if (max - min > (maxNote - minNote)) then
+		return "Cannot transpose. Range from " .. min .. " to " .. max .. " is too large. Difference must be less than " .. (maxNote - minNote)
+	elseif (min > minNote and max < maxNote) then --no transposition necessary
+		return
+	end
+
+	local midOfProvided = math.floor((min + max) / 2)
+	local goalMid = math.floor((minNote + maxNote) / 2)
+	local diff = goalMid - midOfProvided
+	console.log(midOfProvided)
+	console.log(goalMid)
+	console.log(diff)
+
+	for i=1, #score.scoreNotes do
+		local currentNote = score.scoreNotes[i]["note"]
+		score.scoreNotes[i]["note"] = currentNote + diff
 	end
 
 end
@@ -70,20 +104,12 @@ convertRawScoreToNotes = function(notesTable)
 end
 
 getBpm = function(score)
-	--[[
-	"1": "table"
-"2": "table"
-"3": "table"
-"4": "table"
-loop through and look for "set_tempo"
-	]]
 	local microsecondsPerTick
 	for i=1, #score[2] do
 		local currentEvent = score[2][i]
 		if(currentEvent[1] == "set_tempo") then
 			microsecondsPerTick = currentEvent[3]
 		end
-		console.log(score[2][i])
 	end
 
 	if(microsecondsPerTick) then

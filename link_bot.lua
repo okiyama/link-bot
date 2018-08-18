@@ -2,6 +2,8 @@
 --joypad.setanalog sends that value and keeps it until it's reset
 --assuming 60 frames in a second
 
+--Range is from B4 to F6
+
 local Midi = require ('MIDI')
 local midiInput = require("MidiParser")
 
@@ -58,17 +60,23 @@ local function holdButtonsForFrames(buttons, frameCount)
 end
 
 midiInput.new("tetris.midi")
---midiInput.printNotes()
+local transposeErrorMessage = midiInput.autoTranspose(71, 89)
+
+if(transposeErrorMessage) then
+	console.log(transposeErrorMessage)
+	return
+end
+
+midiInput.printNotes()
 
 for i=1, #midiInput.scoreNotes do
 	local currentNoteEvent = midiInput.scoreNotes[i]
 	local note = currentNoteEvent["note"]
 	local framesToHold = midiInput.framesPerBeat * currentNoteEvent["durationMultiplier"]
 
-	joypad.setanalog(notesToAnalogMap[note])
+	joypad.setanalog(notesToAnalogMap[note], 1)
 	holdButtonsForFrames(notesToButtonsMap[note], framesToHold)
 end
-
 
 while true do
 	emu.frameadvance()
