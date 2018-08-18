@@ -2,32 +2,29 @@
 --joypad.setanalog sends that value and keeps it until it's reset
 
 --[[
-resetTable["A"]="False";
-resetTable["A Down"]="False";
-resetTable["A Left"]="False";
-resetTable["A Right"]="False";
-resetTable["A Up"]="False";
-resetTable["B"]="False";
-resetTable["C Down"]="False";
-resetTable["C Left"]="False";
-resetTable["C Right"]="False";
-resetTable["C Up"]="False";
-resetTable["DPad D"]="False";
-resetTable["DPad L"]="False";
-resetTable["DPad R"]="False";
-resetTable["DPad U"]="False";
-resetTable["L"]="False";
-resetTable["R"]="False";
-resetTable["Start"]="False";
+resetTable["A"]="False"
+resetTable["A Down"]="False"
+resetTable["A Left"]="False"
+resetTable["A Right"]="False"
+resetTable["A Up"]="False"
+resetTable["B"]="False"
+resetTable["C Down"]="False"
+resetTable["C Left"]="False"
+resetTable["C Right"]="False"
+resetTable["C Up"]="False"
+resetTable["DPad D"]="False"
+resetTable["DPad L"]="False"
+resetTable["DPad R"]="False"
+resetTable["DPad U"]="False"
+resetTable["L"]="False"
+resetTable["R"]="False"
+resetTable["Start"]="False"
 resetTable["Z"]="False"
 ]]
 
-local LuaMidi = require ('LuaMidi');
+local Midi = require ('MIDI')
+local midiInput = require("MidiParser")
 
---Track 1 is metadata, I think the only thing I care about is the second event, Tempo
-local tracks = LuaMidi.get_MIDI_tracks("tetris.midi");
-console.log(tracks[1]["events"][3]);
-console.log(tracks[2]["events"][2]["pitch"]);
 
 notesToButtonsMap = {
 	["B4"] = {["Z"] = "True",["A"] = "True"},
@@ -53,7 +50,7 @@ notesToButtonsMap = {
 	["E6"] = {["R"] = "True",["C Up"] = "True"},
 	["Fb6"] = {["R"] = "True",["C Up"] = "True"},
 	["F6"] = {["R"] = "True",["C Up"] = "True"}
-};
+}
 
 notesToAnalogMap = {
 	["B4"] = {["Y Axis"] = "-127"},
@@ -79,18 +76,18 @@ notesToAnalogMap = {
 	["E6"] = {["Y Axis"] = "38"},
 	["Fb6"] = {["Y Axis"] = "38"},
 	["F6"] = {["Y Axis"] = "127"}
-};
+}
 
 local function advanceOneSecond ()
 	for i=1,20 do
-		emu.frameadvance();
+		emu.frameadvance()
 	end
 end
 
 local function holdButtonsForOneSecond (buttons)
 	for i=1,20 do
-		joypad.set(buttons, 1);
-		emu.frameadvance();
+		joypad.set(buttons, 1)
+		emu.frameadvance()
 	end
 end
 
@@ -98,30 +95,22 @@ scale = {"B4", "C5", "D5", "E5", "F5", "G5", "A5", "B5", "C6", "D6", "E6", "F6"}
 
 --[[
 for i=1, #scale do
-	note = scale[i];
-	joypad.setanalog(notesToAnalogMap[note], 1);
+	note = scale[i]
+	joypad.setanalog(notesToAnalogMap[note], 1)
 	--console.log(joypad.get(1))
-	holdButtonsForOneSecond(notesToButtonsMap[note]);
-	advanceOneSecond();
+	holdButtonsForOneSecond(notesToButtonsMap[note])
+	advanceOneSecond()
 end
 ]]
-
-events = tracks[2]["events"]
-
-for i=2, #events do
-	console.log(events[i]["pitch"][1]);
-	note = events[i]["pitch"][1];
-	joypad.setanalog(notesToAnalogMap[note], 1);
-	holdButtonsForOneSecond(notesToButtonsMap[note]);
-	advanceOneSecond();
-end
+midiInput.new("tetris.midi")
+midiInput.printNotes()
 --[[
-cRight = {["C Right"] = "True"};
-holdButtonsForOneSecond(cRight);
-advanceOneSecond();
-holdButtonsForOneSecond(cRight);
+cRight = {["C Right"] = "True"}
+holdButtonsForOneSecond(cRight)
+advanceOneSecond()
+holdButtonsForOneSecond(cRight)
 ]]
 
 while true do
-	emu.frameadvance();
+	emu.frameadvance()
 end
