@@ -30,7 +30,7 @@ notesToButtonsMap = {
 }
 
 notesToAnalogMap = {
-	[71] = {["Y Axis"] = "-127"},
+	[71] = {["Y Axis"] = "-128"},
 	[72] = {["Y Axis"] = "-40"},
 	[73] = {["Y Axis"] = "0"},
 	[74] = {["Y Axis"] = "0"},
@@ -59,7 +59,7 @@ local function holdButtonsForFrames(buttons, frameCount)
 	end
 end
 
-midiInput.new("tetris.midi")
+midiInput.new("twinkle_twinkle_top.mid", 1)
 local transposeErrorMessage = midiInput.autoTranspose(71, 89)
 
 if(transposeErrorMessage) then
@@ -67,12 +67,15 @@ if(transposeErrorMessage) then
 	return
 end
 
-midiInput.printNotes()
+console.log("Transposed by " .. score.transposeAmount)
+console.log("Scorenotes length " .. #score.scoreNotes)
 
-for i=1, #midiInput.scoreNotes do
-	local currentNoteEvent = midiInput.scoreNotes[i]
+--midiInput.printNotes()
+
+for i=1, #score.scoreNotes do
+	local currentNoteEvent = score.scoreNotes[i]
 	local note = currentNoteEvent["note"]
-	local framesToHold = midiInput.framesPerBeat * currentNoteEvent["durationMultiplier"]
+	local framesToHold = score.framesPerBeat * currentNoteEvent["durationMultiplier"]
 
 	joypad.setanalog(notesToAnalogMap[note], 1)
 	holdButtonsForFrames(notesToButtonsMap[note], framesToHold)

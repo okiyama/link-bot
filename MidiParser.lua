@@ -3,12 +3,12 @@
 local MIDI = require("MIDI")
 
 score = {}
-local track = 3
 local removeNonNotes
 local getBpm
 local getDurationMultiplier
 
-function score.new(filename)
+function score.new(filename, track)
+	track = track + 1 --Track 1 on the score is just BPM info
 
 	-- Load score from file
 	local midiFile = io.open(filename, 'rb')
@@ -22,7 +22,8 @@ function score.new(filename)
 	score.ticksPerQuarterNote = rawScore[1]
 	score.beatsPerMinute = getBpm(rawScore)
 	score.framesPerBeat = 1 / (score.beatsPerMinute / 3600) --trust me
-	score.scoreNotes = convertRawScoreToNotes(rawScore)
+	score.scoreNotes = convertRawScoreToNotes(rawScore, track)
+	score.transposeAmount = 0
 end
 
 
@@ -56,6 +57,7 @@ function score.autoTranspose(minNote, maxNote)
 		end
 	end
 
+--TODO this really should be a separate function
 	if (max - min > (maxNote - minNote)) then
 		return "Cannot transpose. Range from " .. min .. " to " .. max .. " is too large. Difference must be less than " .. (maxNote - minNote)
 	elseif (min > minNote and max < maxNote) then --no transposition necessary
@@ -65,20 +67,20 @@ function score.autoTranspose(minNote, maxNote)
 	local midOfProvided = math.floor((min + max) / 2)
 	local goalMid = math.floor((minNote + maxNote) / 2)
 	local diff = goalMid - midOfProvided
-	console.log(midOfProvided)
-	console.log(goalMid)
-	console.log(diff)
+
+	score.transposeAmount = diff;
 
 	for i=1, #score.scoreNotes do
 		local currentNote = score.scoreNotes[i]["note"]
 		score.scoreNotes[i]["note"] = currentNote + diff
 	end
 
+
 end
 
 
 -- Returns new score of only note events
-convertRawScoreToNotes = function(notesTable)
+convertRawScoreToNotes = function(notesTable, track)
 	local notesOnly = {}
 	local numNotes = 1
 
